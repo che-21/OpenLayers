@@ -1,4 +1,5 @@
 import { Map, View, TileLayer, OSM, fromLonLat, toLonLat, VectorSource, VectorLayer, Icon, Style, Feature, Point } from './module';
+import secure from './secure.json' assert {type: 'json'};
 
 $(document).ready(function () {
     // OpenLayers 지도 생성
@@ -49,5 +50,28 @@ $(document).ready(function () {
 
         // 마커 추가
         markerSource.addFeature(marker);
+
+        // 카카오 API 요청 (API 키 입력 필수)
+        const API = secure.KAKAO_API_KEY;
+        const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lon}&y=${lat}`;
+
+        try {
+            const response = await fetch(url, {
+                headers: { Authorization: `KakaoAK ${API}` },
+            });
+            const data = await response.json();
+            //console.log(data);
+
+            if (data.documents.length > 0) {
+                var addr = data.documents[0].road_address.address_name;
+                alert(`주소: ${addr}`);
+            } else {
+                alert('주소 정보를 가져올 수 없습니다.');
+            }
+        } catch (error) {
+            if(addr != null){
+                console.error('주소 정보를 불러오는 중 오류 발생:', error);
+            }
+        }
     });
 });
