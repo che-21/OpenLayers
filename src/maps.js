@@ -1,54 +1,49 @@
+import { Map, View, TileLayer, OSM, fromLonLat, toLonLat, VectorSource, VectorLayer, Icon, Style, Feature, Point } from './module';
+
 $(document).ready(function () {
-    var view = new ol.View({
-        center: ol.proj.fromLonLat([126.9780, 37.5665]), // 서울 좌표 (경도, 위도)
-        zoom: 12 // 확대 수준
-    });
-   
-    // 지도 초기화
-    var map = new ol.Map({
-        target: 'map', // HTML의 map div ID
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM({
-                    attributions: [] // OSM 기본 저작권 제거
-                })
-            })
-        ],
-        view: view
+    // OpenLayers 지도 생성
+    const map = new Map({
+    target: 'map',
+    layers: [
+        new TileLayer({
+        source: new OSM(),
+        }),
+    ],
+    view: new View({
+        center: fromLonLat([127.122720, 37.538382]), // 중심 좌표
+        zoom: 17,
+    }),
     });
 
-    // 벡터 레이어 (마커 추가를 위해)
-    var markerSource = new ol.source.Vector();
-    var markerLayer = new ol.layer.Vector({
+    // 마커 추가를 위한 벡터 레이어
+    var markerSource = new VectorSource();
+    var markerLayer = new VectorLayer({
         source: markerSource
     });
     map.addLayer(markerLayer);
 
-    // 지도 클릭 이벤트
-    map.on('click', function (e) {
-        //var coord = ol.proj.toLonLat(e.coordinate); // 좌표 변환
-        //console.log('클릭한 위치의 좌표: ' + coord[0].toFixed(6) + ', ' + coord[1].toFixed(6));
-        
-        var center = ol.proj.toLonLat(view.getCenter()); // getCenter() 사용
-        var zoom = view.getZoom(); // getZoom() 사용
+    // 클릭 이벤트 추가
+    map.on('singleclick', async function (e) {
+        const coordinate = e.coordinate;
+        const lonLat = toLonLat(coordinate); // 경위도로 변환
+        const lon = lonLat[0].toFixed(6);
+        const lat = lonLat[1].toFixed(6);
 
-        console.log(`getCenter(): ${center[0].toFixed(6)}, ${center[0].toFixed(6)}\ngetZoom(): ${zoom}`);
+        //console.log(`경도: ${lon}, 위도: ${lat}`);
 
-        var clickedCoord = e.coordinate; // 클릭한 좌표
-
-        // 기존 마커 삭제 (필요하면 생략 가능)
+        // 기존 마커 삭제 (생략 가능)
         markerSource.clear();
 
         // 마커 생성
-        var marker = new ol.Feature({
-            geometry: new ol.geom.Point(clickedCoord)
+        var marker = new Feature({
+            geometry: new Point(coordinate)
         });
 
         // 마커 스타일 적용 (이미지 사용)
-        marker.setStyle(new ol.style.Style({
-            image: new ol.style.Icon({
-            src: "https://openlayers.org/en/latest/examples/data/icon.png", // 마커 이미지 경로
-            scale: 0.5 // 크기 조절
+        marker.setStyle(new Style({
+            image: new Icon({
+            src: "../src/assets/marker.png", // 마커 이미지 경로
+            scale: 0.06 // 크기 조절
             })
         }));
 
